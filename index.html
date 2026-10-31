@@ -1,1 +1,108 @@
 
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FA200 MUSIC AI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090914;color:white;font-family:Arial,sans-serif}
+header{padding:25px;background:#17172b}
+.logo{font-size:28px;font-weight:bold;color:#a18aff}
+main{padding:20px;max-width:800px;margin:auto}
+.card{background:#19192e;padding:20px;border-radius:16px;margin:18px 0}
+input,textarea,select{width:100%;padding:14px;margin:10px 0;background:#101020;color:white;border:1px solid #555;border-radius:9px;font-size:16px}
+textarea{min-height:100px}
+button{background:#8065ff;color:white;border:0;padding:15px;border-radius:10px;font-weight:bold;font-size:16px}
+.full{width:100%}
+#resultat{white-space:pre-wrap;line-height:1.7;margin-top:15px}
+audio{width:100%;margin-top:15px}
+footer{text-align:center;padding:30px;color:#888}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">FA200 MUSIC AI</div>
+<p>Ton univers musical. Ta créativité. Ton studio.</p>
+</header>
+<main>
+<h2>🎵 Bienvenue dans ton studio</h2>
+<section class="card">
+<h2>🤖 Création de chansons</h2>
+<input id="titre" placeholder="Titre de ta chanson">
+<select id="style">
+<option>Afrobeat</option>
+<option>Afrotrap</option>
+<option>Reggaeton</option>
+<option>R&B</option>
+<option>Drill</option>
+<option>Trap</option>
+<option>Rap</option>
+</select>
+<textarea id="idee" placeholder="Décris ton idée de chanson..."></textarea>
+<button class="full" onclick="creer()">Créer mes paroles</button>
+<div id="resultat"></div>
+</section>
+<section class="card">
+<h2>🎙️ Studio d'enregistrement</h2>
+<p>Enregistre ta voix avec ton microphone.</p>
+<button class="full" id="record" onclick="recordVoice()">🔴 Enregistrer</button>
+<p id="statut">En attente...</p>
+<audio id="audio" controls hidden></audio>
+<a id="download" hidden>Télécharger mon audio</a>
+</section>
+<section class="card">
+<h2>🎹 Studio de production</h2>
+<p>Le piano roll et les instruments seront ajoutés prochainement.</p>
+<button class="full" onclick="alert('Bientôt disponible !')">Ouvrir le studio</button>
+</section>
+</main>
+<footer>FAOO BEAT · FA200 MUSIC AI · 2026</footer>
+<script>
+function creer(){
+let titre=document.getElementById("titre").value||"Ma chanson";
+let style=document.getElementById("style").value;
+let idee=document.getElementById("idee").value||"Une histoire de vie";
+document.getElementById("resultat").textContent=
+"🎵 "+titre+"\nStyle : "+style+
+"\n\n[Couplet 1]\n"+idee+
+"\nJe garde la force de continuer,\nMême quand le monde veut m'arrêter."+
+"\n\n[Refrain]\nOh oh, je vais briller,\nMes rêves ne vont jamais tomber."+
+"\nOh oh, écoute ma voix,\nLa musique est au fond de moi."+
+"\n\n[Couplet 2]\nChaque jour je construis mon histoire,\nJe transforme mes peines en victoire."+
+"\n\nFAOO BEAT – FA200 MUSIC AI";
+}
+let recorder=null,chunks=[],recording=false,streamActif=null;
+async function recordVoice(){
+let bouton=document.getElementById("record");
+let statut=document.getElementById("statut");
+if(!recording){
+try{
+streamActif=await navigator.mediaDevices.getUserMedia({audio:true});
+recorder=new MediaRecorder(streamActif);
+chunks=[];
+recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+recorder.onstop=()=>{
+let blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+let url=URL.createObjectURL(blob);
+let audio=document.getElementById("audio");
+audio.src=url;audio.hidden=false;
+let dl=document.getElementById("download");
+dl.href=url;dl.download="FA200-audio.webm";dl.hidden=false;
+streamActif.getTracks().forEach(t=>t.stop());
+};
+recorder.start();recording=true;
+bouton.textContent="⏹ Arrêter l'enregistrement";
+statut.textContent="Enregistrement en cours...";
+}catch(e){statut.textContent="Autorise le microphone dans ton navigateur."}
+}else{
+recorder.stop();recording=false;
+bouton.textContent="🔴 Enregistrer";
+statut.textContent="Enregistrement terminé !";
+}
+}
+</script>
+</body>
+</html>
