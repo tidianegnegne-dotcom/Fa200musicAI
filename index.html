@@ -61,18 +61,48 @@ footer{text-align:center;padding:30px;color:#888}
 </main>
 <footer>FAOO BEAT · FA200 MUSIC AI · 2026</footer>
 <script>
-function creer(){
-let titre=document.getElementById("titre").value||"Ma chanson";
-let style=document.getElementById("style").value;
-let idee=document.getElementById("idee").value||"Une histoire de vie";
-document.getElementById("resultat").textContent=
-"🎵 "+titre+"\nStyle : "+style+
-"\n\n[Couplet 1]\n"+idee+
-"\nJe garde la force de continuer,\nMême quand le monde veut m'arrêter."+
-"\n\n[Refrain]\nOh oh, je vais briller,\nMes rêves ne vont jamais tomber."+
-"\nOh oh, écoute ma voix,\nLa musique est au fond de moi."+
-"\n\n[Couplet 2]\nChaque jour je construis mon histoire,\nJe transforme mes peines en victoire."+
-"\n\nFAOO BEAT – FA200 MUSIC AI";
+async function creer(){
+  const titre=document.getElementById("titre").value.trim();
+  const style=document.getElementById("style").value;
+  const idee=document.getElementById("idee").value.trim();
+  const resultat=document.getElementById("resultat");
+  const audio=document.getElementById("audio");
+  const download=document.getElementById("download");
+
+  if(!titre || !idee){
+    resultat.textContent="Ajoute un titre et une idée de chanson.";
+    return;
+  }
+
+  resultat.textContent="🎵 Génération de ta musique en cours...";
+
+  try{
+    const reponse=await fetch("https://fa200musicai.onrender.com/api/generate",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        prompt:"Crée une chanson complète en français. Titre : "+titre+". Style : "+style+". Idée : "+idee
+      })
+    });
+
+    const data=await reponse.json();
+
+    if(!reponse.ok || !data.success){
+      throw new Error(data.error || "Erreur de génération");
+    }
+
+    audio.src="data:audio/mpeg;base64,"+data.audioBase64;
+    audio.hidden=false;
+    audio.load();
+
+    download.href=audio.src;
+    download.download=titre+".mp3";
+    download.hidden=false;
+
+    resultat.textContent=data.lyrics || "Ta musique est prête !";
+  }catch(erreur){
+    resultat.textContent="Erreur : "+erreur.message;
+  }
 }
 let recorder=null,chunks=[],recording=false,streamActif=null;
 async function recordVoice(){
